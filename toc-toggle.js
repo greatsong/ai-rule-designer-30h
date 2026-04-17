@@ -1,4 +1,5 @@
 const LS_RIGHT_TOC = 'ef-toc-right-collapsed';
+const LS_LEFT_SIDEBAR = 'ef-sidebar-left-collapsed';
 const LS_SIDEBAR_GROUP = 'ef-sidebar-group:';
 
 // ── 오른쪽 TOC 전체 접기 ───────────────────────────────────
@@ -18,16 +19,43 @@ function toggleRightToc() {
   applyRightTocState();
 }
 
+// ── 왼쪽 사이드바 전체 접기 ────────────────────────────────
+function applyLeftSidebarState() {
+  const collapsed = localStorage.getItem(LS_LEFT_SIDEBAR) === "1";
+  document.documentElement.dataset.efSidebarCollapsed = collapsed ? "true" : "false";
+  document.querySelectorAll(".ef-sidebar-hamburger").forEach((btn) => {
+    btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    btn.setAttribute("title", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+    btn.setAttribute("aria-label", collapsed ? "사이드바 펼치기" : "사이드바 접기");
+  });
+}
+
+function toggleLeftSidebar() {
+  const cur = localStorage.getItem(LS_LEFT_SIDEBAR) === "1";
+  localStorage.setItem(LS_LEFT_SIDEBAR, cur ? "0" : "1");
+  applyLeftSidebarState();
+}
+
 function injectHamburgerButton() {
-  if (document.querySelector(".ef-toc-hamburger")) return;
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "ef-toc-hamburger";
-  btn.setAttribute("aria-controls", "starlight__on-this-page-nav");
-  // 햄버거 아이콘 (U+2630 TRIGRAM FOR HEAVEN)
-  btn.textContent = "\u2630";
-  btn.addEventListener("click", (e) => { e.preventDefault(); toggleRightToc(); });
-  document.body.appendChild(btn);
+  // 오른쪽 TOC 햄버거
+  if (!document.querySelector(".ef-toc-hamburger")) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ef-toc-hamburger";
+    btn.setAttribute("aria-controls", "starlight__on-this-page-nav");
+    btn.textContent = "\u2630";
+    btn.addEventListener("click", (e) => { e.preventDefault(); toggleRightToc(); });
+    document.body.appendChild(btn);
+  }
+  // 왼쪽 사이드바 햄버거
+  if (!document.querySelector(".ef-sidebar-hamburger")) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ef-sidebar-hamburger";
+    btn.textContent = "\u2630";
+    btn.addEventListener("click", (e) => { e.preventDefault(); toggleLeftSidebar(); });
+    document.body.appendChild(btn);
+  }
 }
 
 // ── 왼쪽 사이드바 그룹 접힘 상태 유지 ───────────────────────
@@ -64,6 +92,7 @@ function bindSidebarListeners() {
 function init() {
   injectHamburgerButton();
   applyRightTocState();
+  applyLeftSidebarState();
   applySidebarState();
   bindSidebarListeners();
 }
